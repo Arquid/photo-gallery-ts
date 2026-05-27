@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Photo Gallery</title>
+    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1 class="logo">Photo Gallery</h1>
+      <p class="tagline">A curated visual experience</p>
+      <div class="search-bar">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Search for images…"
+          autocomplete="off"
+        />
+        <button id="search-btn">Search</button>
+      </div>
+    </header>
+
+    <main>
+      <div id="gallery" class="gallery-grid"></div>
+      <div id="loader" class="loader hidden">
+        <span></span><span></span><span></span>
+      </div>
+      <div id="sentinel" class="sentinel"></div>
+    </main>
+
+    <div id="lightbox" class="lightbox hidden">
+      <button id="lightbox-close">✕</button>
+      <img id="lightbox-img" src="" alt="" />
+      <p id="lightbox-caption"></p>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
