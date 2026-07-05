@@ -23,10 +23,17 @@ export function renderImages(images: PixabayImage[], append = false): void {
 
     const overlay = document.createElement('div');
     overlay.className = 'overlay';
-    overlay.innerHTML = `
-      <span class="overlay-tags">${img.tags.split(",").slice(0, 3).join(" · ")}</span>
-      <span class="overlay-meta">♥ ${img.likes.toLocaleString()}</span>    
-    `;
+    
+    const tagsSpan = document.createElement('span');
+    tagsSpan.className = 'overlay-tags';
+    tagsSpan.textContent = img.tags.split(',').slice(0, 3).join(' · ');
+
+    const metaSpan = document.createElement('span');
+    metaSpan.className = 'overlay-meta';
+    metaSpan.textContent = `♥ ${img.likes.toLocaleString()}`;
+
+    overlay.appendChild(tagsSpan);
+    overlay.appendChild(metaSpan);
 
     item.appendChild(image);
     item.appendChild(overlay);

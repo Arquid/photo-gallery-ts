@@ -30,7 +30,8 @@ photo-gallery/
 │   ├── gallery.ts     # DOM rendering, lightbox logic
 │   └── style.css      # All styles (masonry grid, lightbox, animations)
 ├── index.html         # App shell with header, gallery container, sentinel
-└── vite.config.ts     # Vite configuration
+├── .env               # Your Pixabay API key (not committed)
+└── .env.example       # Template for .env
 ```
 
 ---
@@ -58,11 +59,19 @@ npm install
 
 ### 4. Add your API key
 
-Open `src/api.ts` and replace the placeholder:
+Copy the example env file and add your key:
 
-```typescript
-const API_KEY = "YOUR_PIXABAY_API_KEY"; // ← Replace this
+```bash
+cp .env.example .env
 ```
+
+Then open `.env` and set your key:
+
+```
+VITE_PIXABAY_KEY=your_pixabay_api_key
+```
+
+`.env` is gitignored, so your key stays out of version control. Vite only exposes environment variables prefixed with `VITE_` to client code.
 
 ### 5. Start the development server
 

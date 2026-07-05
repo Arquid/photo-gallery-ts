@@ -10,6 +10,7 @@ let currentQuery = 'landscape';
 let currentPage = 1;
 let totalHits = 0;
 let isLoading = false;
+const PER_PAGE = 20;
 
 async function loadImages(append = false): Promise<void> {
   if (isLoading) return;
@@ -17,7 +18,7 @@ async function loadImages(append = false): Promise<void> {
   loader.classList.remove('hidden');
 
   try {
-    const data = await fetchImages(currentQuery, currentPage);
+    const data = await fetchImages(currentQuery, currentPage, PER_PAGE);
     totalHits = data.totalHits;
     renderImages(data.hits, append);
     currentPage++;
@@ -47,7 +48,7 @@ const observer = new IntersectionObserver(
   (entries) => {
     const entry = entries[0];
     if (entry.isIntersecting && !isLoading) {
-      const loaded = (currentPage - 1) * 20;
+      const loaded = (currentPage - 1) * PER_PAGE;
       if (loaded < totalHits || currentPage === 1) {
         loadImages(true);
       }

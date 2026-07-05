@@ -1,4 +1,4 @@
-const API_KEY = 'YOUR_PIXABAY_API_KEY' // ← Replace this
+const API_KEY = import.meta.env.VITE_PIXABAY_KEY;
 const BASE_URL = 'https://pixabay.com/api';
 
 export interface PixabayImage {
@@ -9,7 +9,7 @@ export interface PixabayImage {
   user: string;
   views: number;
   likes: number;
-  webformatWidht: number;
+  webformatWidth: number;
   webformatHeight: number;
 }
 
@@ -20,16 +20,16 @@ export interface PixabayResponse {
 
 export async function fetchImages (
   query: string,
-  page: Number,
+  page: number,
   perPage: number = 20
 ): Promise<PixabayResponse> {
   const params = new URLSearchParams({
     key: API_KEY,
     q: query || 'nature',
     page: String(page),
-    per_image: String(perPage),
+    per_page: String(perPage),
     image_type: 'photo',
-    safeSearch: 'true'
+    safesearch: 'true'
   });
 
   const res = await fetch(`${BASE_URL}?${params.toString()}`);
