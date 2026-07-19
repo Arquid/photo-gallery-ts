@@ -22,7 +22,6 @@ body {
   min-height: 100vh;
 }
 
-/* ── Header ── */
 .site-header {
   text-align: center;
   padding: 4rem 2rem 3rem;
@@ -91,7 +90,6 @@ body {
   background: #d9bc85;
 }
 
-/* ── Gallery Grid ── */
 .gallery-grid {
   columns: 4 280px;
   column-gap: 10px;
@@ -161,7 +159,6 @@ body {
   color: var(--accent);
 }
 
-/* ── Loader ── */
 .loader {
   display: flex;
   justify-content: center;
@@ -188,6 +185,18 @@ body {
   animation-delay: 0.4s;
 }
 
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: #d97676;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+}
+
+.error.hidden {
+  display: none;
+}
+
 @keyframes pulse {
   0%,
   80%,
@@ -205,7 +214,6 @@ body {
   height: 1px;
 }
 
-/* ── Lightbox ── */
 .lightbox {
   position: fixed;
   inset: 0;

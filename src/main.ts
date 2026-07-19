@@ -5,6 +5,7 @@ const searchInput = document.getElementById('search-input') as HTMLInputElement;
 const searchBtn = document.getElementById('search-btn') as HTMLButtonElement;
 const loader = document.getElementById('loader') as HTMLDivElement;
 const sentinel = document.getElementById('sentinel') as HTMLDivElement;
+const errorMessage = document.getElementById('error-message') as HTMLDivElement;
 
 let currentQuery = 'landscape';
 let currentPage = 1;
@@ -16,6 +17,7 @@ async function loadImages(append = false): Promise<void> {
   if (isLoading) return;
   isLoading = true;
   loader.classList.remove('hidden');
+  errorMessage.classList.add('hidden');
 
   try {
     const data = await fetchImages(currentQuery, currentPage, PER_PAGE);
@@ -24,6 +26,8 @@ async function loadImages(append = false): Promise<void> {
     currentPage++;
   } catch (err) {
     console.error('Failed to fetch images:', err);
+    errorMessage.textContent = 'Failed to load images. Please try again.';
+    errorMessage.classList.remove('hidden');
   } finally {
     isLoading = false;
     loader.classList.add('hidden');
