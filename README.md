@@ -81,6 +81,12 @@ npm run dev
 
 Open your browser at **http://localhost:5173**
 
+### 6. Run the tests
+
+```bash
+npm test
+```
+
 ---
 
 ## 🌐 API Reference
@@ -159,6 +165,8 @@ This project uses **zero runtime dependencies** — only Vite as a dev tool.
 |---|---|
 | `vite` | Dev server & bundler |
 | `typescript` | Type checking |
+| `vitest` | Test runner |
+| `jsdom` | DOM environment for tests |
 
 ---
 
