@@ -7,6 +7,7 @@ const lightboxCaption = document.getElementById(
   'lightbox-caption'
 ) as HTMLParagraphElement;
 const closeBtn = document.getElementById('lightbox-close') as HTMLButtonElement;
+let lastFocusedElement: HTMLElement | null = null;
 
 export function renderImages(images: PixabayImage[], append = false): void {
   if (!append) gallery.innerHTML = '';
@@ -15,6 +16,9 @@ export function renderImages(images: PixabayImage[], append = false): void {
     const item = document.createElement('div');
     item.className = 'gallery-item';
     item.style.animationDelay = `${(i % 20) * 40}ms`;
+    item.tabIndex = 0;
+    item.setAttribute('role', 'button');
+    item.setAttribute('aria-label', `View image: ${img.tags}`);
 
     const image = document.createElement('img');
     image.src = img.webformatURL;
@@ -23,7 +27,7 @@ export function renderImages(images: PixabayImage[], append = false): void {
 
     const overlay = document.createElement('div');
     overlay.className = 'overlay';
-    
+
     const tagsSpan = document.createElement('span');
     tagsSpan.className = 'overlay-tags';
     tagsSpan.textContent = img.tags.split(',').slice(0, 3).join(' · ');
@@ -38,21 +42,30 @@ export function renderImages(images: PixabayImage[], append = false): void {
     item.appendChild(image);
     item.appendChild(overlay);
     item.addEventListener('click', () => openLightBox(img));
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openLightBox(img);
+      }
+    });
     gallery.appendChild(item);
   })
 }
 
 function openLightBox(img: PixabayImage): void {
+  lastFocusedElement = document.activeElement as HTMLElement;
   lightboxImg.src = img.largeImageURL;
   lightboxCaption.textContent = `${img.tags} - by ${img.user}`;
   lightbox.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+  closeBtn.focus();
 }
 
 function closeLightbox(): void {
   lightbox.classList.add('hidden');
   lightboxImg.src = '';
   document.body.style.overflow = '';
+  lastFocusedElement?.focus();
 }
 
 closeBtn.addEventListener('click', closeLightbox);
