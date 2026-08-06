@@ -8,11 +8,19 @@ const lightboxCaption = document.getElementById(
 ) as HTMLParagraphElement;
 const closeBtn = document.getElementById('lightbox-close') as HTMLButtonElement;
 let lastFocusedElement: HTMLElement | null = null;
+let currentImages: PixabayImage[] = [];
+let currentIndex = -1;
 
 export function renderImages(images: PixabayImage[], append = false): void {
-  if (!append) gallery.innerHTML = '';
+  if (!append) {
+    gallery.innerHTML = '';
+    currentImages = [];
+  }
+  const startIndex = currentImages.length;
+  currentImages = currentImages.concat(images);
 
   images.forEach((img, i) => {
+    const index = startIndex + i;
     const item = document.createElement('div');
     item.className = 'gallery-item';
     item.style.animationDelay = `${(i % 20) * 40}ms`;
@@ -41,24 +49,34 @@ export function renderImages(images: PixabayImage[], append = false): void {
 
     item.appendChild(image);
     item.appendChild(overlay);
-    item.addEventListener('click', () => openLightBox(img));
+    item.addEventListener('click', () => openLightBox(index));
     item.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        openLightBox(img);
+        openLightBox(index);
       }
     });
     gallery.appendChild(item);
   })
 }
 
-function openLightBox(img: PixabayImage): void {
+function openLightBox(index: number): void {
   lastFocusedElement = document.activeElement as HTMLElement;
+  currentIndex = index;
+  const img = currentImages[index];
   lightboxImg.src = img.largeImageURL;
   lightboxCaption.textContent = `${img.tags} - by ${img.user}`;
   lightbox.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   closeBtn.focus();
+}
+
+function showImageAt(index: number): void {
+  if (index < 0 || index >= currentImages.length) return;
+  currentIndex = index;
+  const img = currentImages[index];
+  lightboxImg.src = img.largeImageURL;
+  lightboxCaption.textContent = `${img.tags} - by ${img.user}`;
 }
 
 function closeLightbox(): void {
@@ -73,5 +91,8 @@ lightbox.addEventListener('click', (e) => {
   if (e.target === lightbox) closeLightbox();
 });
 document.addEventListener('keydown', (e) => {
+  if (lightbox.classList.contains('hidden')) return;
   if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowRight') showImageAt(currentIndex + 1);
+  if (e.key === 'ArrowLeft') showImageAt(currentIndex - 1);
 });
