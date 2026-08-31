@@ -6,6 +6,7 @@ const searchBtn = document.getElementById('search-btn') as HTMLButtonElement;
 const loader = document.getElementById('loader') as HTMLDivElement;
 const sentinel = document.getElementById('sentinel') as HTMLDivElement;
 const errorMessage = document.getElementById('error-message') as HTMLDivElement;
+const backToTop = document.getElementById('back-to-top') as HTMLButtonElement;
 
 let currentQuery = 'landscape';
 let currentPage = 1;
@@ -62,5 +63,17 @@ const observer = new IntersectionObserver(
 );
 
 observer.observe(sentinel);
+
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 600) {
+    backToTop.classList.remove('hidden');
+  } else {
+    backToTop.classList.add('hidden');
+  }
+});
+
+backToTop.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 
 loadImages(false);

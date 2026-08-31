@@ -6,7 +6,9 @@ function setupDom(): void {
     <div id="gallery"></div>
     <div id="lightbox" class="hidden">
       <button id="lightbox-close"></button>
+      <button id="lightbox-prev"></button>
       <img id="lightbox-img" />
+      <button id="lightbox-next"></button>
       <p id="lightbox-caption"></p>
     </div>
   `;

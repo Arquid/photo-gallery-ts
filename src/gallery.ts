@@ -7,6 +7,8 @@ const lightboxCaption = document.getElementById(
   'lightbox-caption'
 ) as HTMLParagraphElement;
 const closeBtn = document.getElementById('lightbox-close') as HTMLButtonElement;
+const prevBtn = document.getElementById('lightbox-prev') as HTMLButtonElement;
+const nextBtn = document.getElementById('lightbox-next') as HTMLButtonElement;
 let lastFocusedElement: HTMLElement | null = null;
 let currentImages: PixabayImage[] = [];
 let currentIndex = -1;
@@ -69,6 +71,7 @@ function openLightBox(index: number): void {
   lightbox.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   closeBtn.focus();
+  updateNavButtons();
 }
 
 function showImageAt(index: number): void {
@@ -77,6 +80,12 @@ function showImageAt(index: number): void {
   const img = currentImages[index];
   lightboxImg.src = img.largeImageURL;
   lightboxCaption.textContent = `${img.tags} - by ${img.user}`;
+  updateNavButtons();
+}
+
+function updateNavButtons(): void {
+  prevBtn.disabled = currentIndex <= 0;
+  nextBtn.disabled = currentIndex >= currentImages.length - 1;
 }
 
 function closeLightbox(): void {
@@ -87,6 +96,8 @@ function closeLightbox(): void {
 }
 
 closeBtn.addEventListener('click', closeLightbox);
+prevBtn.addEventListener('click', () => showImageAt(currentIndex - 1));
+nextBtn.addEventListener('click', () => showImageAt(currentIndex + 1));
 lightbox.addEventListener('click', (e) => {
   if (e.target === lightbox) closeLightbox();
 });
