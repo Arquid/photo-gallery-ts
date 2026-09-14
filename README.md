@@ -15,7 +15,11 @@ A responsive photo gallery built with **Vite + TypeScript**, powered by the [Pix
 - 🧱 **Masonry grid layout** — CSS `columns`-based responsive grid
 - ♾️ **Infinite scrolling** — loads more images automatically using `IntersectionObserver`
 - 🖼️ **Lightbox viewer** — click any image to view it full-size with tags and author
-- ⚡ **Lazy loading** — native `loading="lazy"` on all images
+- ⌨️ **Keyboard navigation** — Tab through the gallery, Enter/Space to open, arrow keys or on-screen buttons to move between images, Escape to close
+- ⚡ **Preloading** — the previous and next images load in the background as you browse the lightbox, so navigation feels instant
+- 🔝 **Back to top** — a floating button appears after scrolling and smoothly scrolls back up
+- ⚠️ **Error feedback** — a visible message if a search or image load fails
+- ♿ **Accessible** — ARIA roles/labels on gallery items and the lightbox dialog, with focus management
 - 🎨 **Animated UI** — fade-in animations, hover overlays, loading pulse
 
 ---
@@ -139,6 +143,24 @@ The grid uses native CSS `columns` — no JavaScript layout library needed.
 }
 .gallery-item {
   break-inside: avoid;
+}
+```
+
+### Lightbox Navigation & Preloading
+
+The lightbox tracks every image loaded so far (`currentImages`) and the index of the open one. Arrow keys, on-screen prev/next buttons, and swiping through the gallery all move through the same list, disabling the buttons at the first/last image. Each time the lightbox opens or moves to a new image, the neighboring images are preloaded in the background:
+
+```typescript
+function preloadImage(index: number): void {
+  const img = currentImages[index];
+  if (!img) return;
+  const preload = new Image();
+  preload.src = img.largeImageURL;
+}
+
+function preloadNeighbors(index: number): void {
+  preloadImage(index - 1);
+  preloadImage(index + 1);
 }
 ```
 

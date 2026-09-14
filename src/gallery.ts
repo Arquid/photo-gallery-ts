@@ -72,6 +72,14 @@ function openLightBox(index: number): void {
   document.body.style.overflow = 'hidden';
   closeBtn.focus();
   updateNavButtons();
+  preloadNeighbors(index);
+}
+
+function closeLightbox(): void {
+  lightbox.classList.add('hidden');
+  lightboxImg.src = '';
+  document.body.style.overflow = '';
+  lastFocusedElement?.focus();
 }
 
 function showImageAt(index: number): void {
@@ -81,6 +89,7 @@ function showImageAt(index: number): void {
   lightboxImg.src = img.largeImageURL;
   lightboxCaption.textContent = `${img.tags} - by ${img.user}`;
   updateNavButtons();
+  preloadNeighbors(index);
 }
 
 function updateNavButtons(): void {
@@ -88,11 +97,16 @@ function updateNavButtons(): void {
   nextBtn.disabled = currentIndex >= currentImages.length - 1;
 }
 
-function closeLightbox(): void {
-  lightbox.classList.add('hidden');
-  lightboxImg.src = '';
-  document.body.style.overflow = '';
-  lastFocusedElement?.focus();
+function preloadImage(index: number): void {
+  const img = currentImages[index];
+  if (!img) return;
+  const preload = new Image();
+  preload.src = img.largeImageURL;
+}
+
+function preloadNeighbors(index: number): void {
+  preloadImage(index - 1);
+  preloadImage(index + 1);
 }
 
 closeBtn.addEventListener('click', closeLightbox);
