@@ -2,8 +2,8 @@
 
 A responsive photo gallery built with **Vite + TypeScript**, powered by the [Pixabay API](https://pixabay.com/api/docs/). Features infinite scrolling, a masonry grid layout, image search, and a lightbox viewer.
 
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?style=flat-square&logo=vite&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-6.x-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-Masonry%20Grid-1572B6?style=flat-square&logo=css3&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
@@ -28,26 +28,33 @@ A responsive photo gallery built with **Vite + TypeScript**, powered by the [Pix
 ## 🗂️ Project Structure
 
 ```
-photo-gallery/
+photo-gallery-ts/
 ├── src/
-│   ├── main.ts        # App entry point, search logic, infinite scroll
-│   ├── api.ts         # Pixabay API calls and TypeScript interfaces
-│   ├── gallery.ts     # DOM rendering, lightbox logic
-│   └── style.css      # All styles (masonry grid, lightbox, animations)
-├── index.html         # App shell with header, gallery container, sentinel
-├── .env               # Your Pixabay API key (not committed)
-└── .env.example       # Template for .env
+│   ├── main.ts            # App entry point, search + URL state, infinite scroll
+│   ├── api.ts             # Pixabay API calls and TypeScript interfaces
+│   ├── gallery.ts         # DOM rendering, lightbox logic
+│   ├── api.test.ts        # Unit tests for the API layer
+│   ├── gallery.test.ts    # Unit tests for rendering and the lightbox
+│   └── style.css          # All styles (masonry grid, lightbox, animations)
+├── public/                # Static assets
+├── index.html             # App shell with header, gallery container, sentinel
+├── vitest.config.ts       # Test runner configuration (jsdom)
+├── tsconfig.json          # TypeScript configuration
+├── .env                   # Your Pixabay API key (not committed)
+└── .env.example           # Template for .env
 ```
 
 ---
 
 ## 🚀 Getting Started
 
+**Prerequisites:** [Node.js](https://nodejs.org/) 20.19+ or 22.12+ (required by Vite 8) and npm.
+
 ### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Arquid/photo-gallery-ts.git
-cd photo-gallery
+cd photo-gallery-ts
 ```
 
 ### 2. Install dependencies
@@ -70,13 +77,17 @@ Copy the example env file and add your key:
 cp .env.example .env
 ```
 
+(In Windows `cmd`, use `copy .env.example .env`.)
+
 Then open `.env` and set your key:
 
 ```
 VITE_PIXABAY_KEY=your_pixabay_api_key
 ```
 
-`.env` is gitignored, so your key stays out of version control. Vite only exposes environment variables prefixed with `VITE_` to client code.
+`.env` is gitignored, so your key stays out of version control. Vite only exposes environment variables prefixed with `VITE_` to client code, and it reads `.env` when the dev server starts, so restart `npm run dev` after changing it.
+
+> **Note:** this is a client-side app, so the key is inlined into the JavaScript bundle and is visible to anyone who opens the site (also in the browser's network tab). Use a key you can rotate, and put a small server-side proxy in front of the API before deploying publicly.
 
 ### 5. Start the development server
 
@@ -86,11 +97,22 @@ npm run dev
 
 Open your browser at **http://localhost:5173**
 
+If the page stays empty and shows "Failed to load images. Please try again.", the API key is most likely missing or invalid — check `.env` and restart the dev server.
+
 ### 6. Run the tests
 
 ```bash
 npm test
 ```
+
+### Available scripts
+
+| Script | Description |
+|---|---|
+| `npm run dev` | Start the Vite dev server |
+| `npm run build` | Type-check with `tsc`, then create a production build in `dist/` |
+| `npm run preview` | Serve the production build locally |
+| `npm test` | Run the unit tests once with Vitest |
 
 ---
 
@@ -111,7 +133,7 @@ This project uses the [Pixabay REST API](https://pixabay.com/api/docs/).
 | `image_type` | `photo` | Only real photos |
 | `safesearch` | `true` | Family-safe results only |
 
-**Free tier limits:** 100 requests/minute, 5 000 results per query.
+**Limits:** 100 requests per minute (the API reports this in the `X-RateLimit-Limit` header). Each query exposes at most 500 results (`totalHits`), so infinite scrolling ends after 500 images.
 
 ---
 
@@ -124,14 +146,20 @@ An `IntersectionObserver` watches a hidden sentinel element at the bottom of the
 ```typescript
 const observer = new IntersectionObserver(
   (entries) => {
-    if (entries[0].isIntersecting && !isLoading) {
-      loadImages(true); // append = true
+    const entry = entries[0];
+    if (entry.isIntersecting && !isLoading) {
+      const loaded = (currentPage - 1) * PER_PAGE;
+      if (loaded < totalHits || currentPage === 1) {
+        loadImages(true); // append = true
+      }
     }
   },
-  { rootMargin: "300px" }
+  { rootMargin: '300px' }
 );
 observer.observe(sentinel);
 ```
+
+Loading stops once every result reported by the API (`totalHits`) has been fetched.
 
 ### URL State
 
@@ -171,7 +199,7 @@ The grid uses native CSS `columns` — no JavaScript layout library needed.
 
 ### Lightbox Navigation & Preloading
 
-The lightbox tracks every image loaded so far (`currentImages`) and the index of the open one. Arrow keys, on-screen prev/next buttons, and swiping through the gallery all move through the same list, disabling the buttons at the first/last image. Each time the lightbox opens or moves to a new image, the neighboring images are preloaded in the background:
+The lightbox tracks every image loaded so far (`currentImages`) and the index of the open one. Arrow keys and the on-screen prev/next buttons move through the same list, and the buttons are disabled at the first/last image (touch swiping is not implemented). Each time the lightbox opens or moves to a new image, the neighboring images are preloaded in the background:
 
 ```typescript
 function preloadImage(index: number): void {
@@ -196,7 +224,10 @@ export interface PixabayImage {
   largeImageURL: string;
   tags: string;
   user: string;
+  views: number;
   likes: number;
+  webformatWidth: number;
+  webformatHeight: number;
 }
 ```
 
