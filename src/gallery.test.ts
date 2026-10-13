@@ -3,7 +3,8 @@ import type { PixabayImage } from './api';
 
 function setupDom(): void {
   document.body.innerHTML = `
-    <div id="gallery"></div>
+    <header class="site-header"><input id="search-input" /></header>
+    <main><div id="gallery"></div></main>
     <div id="lightbox" class="hidden">
       <button id="lightbox-close"></button>
       <button id="lightbox-prev"></button>
@@ -199,6 +200,52 @@ describe('renderImages', () => {
     prevBtn.click();
     expect(lightboxImg.getAttribute('src')).toBe('https://example.com/1.jpg');
     expect(prevBtn.disabled).toBe(true);
+  });
+
+  it('makes the page background inert only while the lightbox is open', async () => {
+    const { renderImages } = await import('./gallery');
+    renderImages([makeImage()]);
+
+    const header = document.querySelector('.site-header')!;
+    const main = document.querySelector('main')!;
+    const lightbox = document.getElementById('lightbox')!;
+    expect(header.hasAttribute('inert')).toBe(false);
+    expect(main.hasAttribute('inert')).toBe(false);
+
+    (document.querySelector('.gallery-item') as HTMLElement).click();
+    expect(header.hasAttribute('inert')).toBe(true);
+    expect(main.hasAttribute('inert')).toBe(true);
+    expect(lightbox.hasAttribute('inert')).toBe(false);
+
+    (document.getElementById('lightbox-close') as HTMLElement).click();
+    expect(header.hasAttribute('inert')).toBe(false);
+    expect(main.hasAttribute('inert')).toBe(false);
+  });
+
+  it('removes the inert background when closing with Escape', async () => {
+    const { renderImages } = await import('./gallery');
+    renderImages([makeImage()]);
+
+    (document.querySelector('.gallery-item') as HTMLElement).click();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+    expect(document.querySelector('.site-header')!.hasAttribute('inert')).toBe(false);
+    expect(document.querySelector('main')!.hasAttribute('inert')).toBe(false);
+  });
+
+  it('moves focus into the lightbox and back to the item that opened it', async () => {
+    const { renderImages } = await import('./gallery');
+    renderImages([makeImage()]);
+
+    const item = document.querySelector('.gallery-item') as HTMLElement;
+    item.focus();
+    expect(document.activeElement).toBe(item);
+
+    item.click();
+    expect(document.activeElement).toBe(document.getElementById('lightbox-close'));
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(document.activeElement).toBe(item);
   });
 
   it('preloads only the next image when opening the first image', async () => {

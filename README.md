@@ -20,7 +20,7 @@ A responsive photo gallery built with **Vite + TypeScript**, powered by the [Pix
 - ⚡ **Preloading** — the previous and next images load in the background as you browse the lightbox, so navigation feels instant
 - 🔝 **Back to top** — a floating button appears after scrolling and smoothly scrolls back up
 - ⚠️ **Error feedback** — a visible message if a search or image load fails
-- ♿ **Accessible** — ARIA roles/labels on gallery items and the lightbox dialog, with focus management
+- ♿ **Accessible** — ARIA roles/labels on gallery items and the lightbox dialog; while the lightbox is open the rest of the page is `inert`, so keyboard focus stays inside it and returns to the opening image when it closes
 - 🎨 **Animated UI** — fade-in animations, hover overlays, loading pulse
 
 ---
@@ -227,6 +227,18 @@ function preloadImage(index: number): void {
 function preloadNeighbors(index: number): void {
   preloadImage(index - 1);
   preloadImage(index + 1);
+}
+```
+
+### Lightbox Focus Handling
+
+The lightbox is a modal dialog, so the page behind it must not be reachable. While it is open, `.site-header` and `main` get the `inert` attribute, which blocks focus and clicks there and hides them from screen readers. The order matters: the previously focused element is stored before the background becomes inert, and `inert` is removed before focus is restored on close (focus cannot move into an inert subtree).
+
+```typescript
+const background = document.querySelectorAll('.site-header, main');
+
+function setBackgroundInert(inert: boolean): void {
+  background.forEach((el) => el.toggleAttribute('inert', inert));
 }
 ```
 

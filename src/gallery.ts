@@ -12,6 +12,11 @@ const nextBtn = document.getElementById('lightbox-next') as HTMLButtonElement;
 let lastFocusedElement: HTMLElement | null = null;
 let currentImages: PixabayImage[] = [];
 let currentIndex = -1;
+const background = document.querySelectorAll('.site-header, main');
+
+function setBackgroundInert(inert: boolean): void {
+  background.forEach((el) => el.toggleAttribute('inert', inert));
+}
 
 export function renderImages(images: PixabayImage[], append = false): void {
   if (!append) {
@@ -70,6 +75,7 @@ function openLightBox(index: number): void {
   lightboxCaption.textContent = `${img.tags} - by ${img.user}`;
   lightbox.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+  setBackgroundInert(true);
   closeBtn.focus();
   updateNavButtons();
   preloadNeighbors(index);
@@ -79,6 +85,7 @@ function closeLightbox(): void {
   lightbox.classList.add('hidden');
   lightboxImg.src = '';
   document.body.style.overflow = '';
+  setBackgroundInert(false);
   lastFocusedElement?.focus();
 }
 
