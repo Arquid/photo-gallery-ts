@@ -248,6 +248,36 @@ describe('renderImages', () => {
     expect(document.activeElement).toBe(item);
   });
 
+  it('closes an open lightbox when closeLightbox is called from outside', async () => {
+    const { renderImages, closeLightbox } = await import('./gallery');
+    renderImages([makeImage()]);
+
+    const item = document.querySelector('.gallery-item') as HTMLElement;
+    item.focus();
+    item.click();
+    closeLightbox();
+
+    expect(document.getElementById('lightbox')!.classList.contains('hidden')).toBe(true);
+    expect(document.querySelector('main')!.hasAttribute('inert')).toBe(false);
+    expect(document.activeElement).toBe(item);
+  });
+
+  it('does nothing when closeLightbox is called while the lightbox is already closed', async () => {
+    const { renderImages, closeLightbox } = await import('./gallery');
+    renderImages([makeImage()]);
+
+    const item = document.querySelector('.gallery-item') as HTMLElement;
+    item.focus();
+    item.click();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    searchInput.focus();
+    closeLightbox();
+
+    expect(document.activeElement).toBe(searchInput);
+  });
+
   it('preloads only the next image when opening the first image', async () => {
     const preloadedSrcs: string[] = [];
     class MockImage {

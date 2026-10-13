@@ -242,6 +242,8 @@ function setBackgroundInert(inert: boolean): void {
 }
 ```
 
+`closeLightbox()` is exported and does nothing when the lightbox is already closed, so it can be called safely from anywhere without stealing focus. `runSearch` calls it first: if the user presses the browser's back button while the lightbox is open, the lightbox closes immediately (even if the new request is slow or fails) and the old image list can no longer be navigated.
+
 ### TypeScript Interfaces
 
 ```typescript

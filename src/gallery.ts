@@ -81,7 +81,8 @@ function openLightBox(index: number): void {
   preloadNeighbors(index);
 }
 
-function closeLightbox(): void {
+export function closeLightbox(): void {
+  if (lightbox.classList.contains('hidden')) return;
   lightbox.classList.add('hidden');
   lightboxImg.src = '';
   document.body.style.overflow = '';

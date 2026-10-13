@@ -1,5 +1,5 @@
 import { fetchImages } from './api';
-import { renderImages } from './gallery';
+import { closeLightbox, renderImages } from './gallery';
 
 const searchInput = document.getElementById('search-input') as HTMLInputElement;
 const searchBtn = document.getElementById('search-btn') as HTMLButtonElement;
@@ -52,6 +52,7 @@ async function loadImages(append = false): Promise<void> {
 }
 
 function runSearch(query: string): void {
+  closeLightbox();
   currentQuery = query;
   currentPage = 1;
   totalHits = 0;
