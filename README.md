@@ -12,6 +12,7 @@ A responsive photo gallery built with **Vite + TypeScript**, powered by the [Pix
 ## ✨ Features
 
 - 🔍 **Image search** — search any keyword via Pixabay API
+- 🔗 **Shareable searches** — the search term lives in the URL (`?q=forest`), so links can be shared and the browser's back/forward buttons move between searches
 - 🧱 **Masonry grid layout** — CSS `columns`-based responsive grid
 - ♾️ **Infinite scrolling** — loads more images automatically using `IntersectionObserver`
 - 🖼️ **Lightbox viewer** — click any image to view it full-size with tags and author
@@ -130,6 +131,28 @@ const observer = new IntersectionObserver(
   { rootMargin: "300px" }
 );
 observer.observe(sentinel);
+```
+
+### URL State
+
+The current search term is stored in the `q` query parameter. On load, `?q=...` is read and the search box is filled in (without it, the default search `landscape` is used). Each new search adds a history entry with `history.pushState`, repeating the same search does not, and a `popstate` listener re-runs the search when the user navigates back or forward. Only the search term is stored, not the page number, because infinite scrolling loads pages incrementally.
+
+```typescript
+function search(): void {
+  const query = searchInput.value.trim();
+  if (!query) return;
+  if (query !== readQueryParam()) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('q', query);
+    history.pushState(null, '', url);
+  }
+  runSearch(query);
+}
+
+window.addEventListener('popstate', () => {
+  searchInput.value = readQueryParam();
+  runSearch(readQueryParam() || DEFAULT_QUERY);
+});
 ```
 
 ### Masonry Grid

@@ -8,7 +8,16 @@ const sentinel = document.getElementById('sentinel') as HTMLDivElement;
 const errorMessage = document.getElementById('error-message') as HTMLDivElement;
 const backToTop = document.getElementById('back-to-top') as HTMLButtonElement;
 
-let currentQuery = 'landscape';
+const DEFAULT_QUERY = 'landscape';
+
+function readQueryParam(): string {
+  return new URLSearchParams(window.location.search).get('q')?.trim() ?? '';
+}
+
+const initialQuery = readQueryParam();
+let currentQuery = initialQuery || DEFAULT_QUERY;
+searchInput.value = initialQuery;
+
 let currentPage = 1;
 let totalHits = 0;
 let isLoading = false;
@@ -35,18 +44,31 @@ async function loadImages(append = false): Promise<void> {
   }
 }
 
-function search(): void {
-  const query = searchInput.value.trim();
-  if (!query) return;
+function runSearch(query: string): void {
   currentQuery = query;
   currentPage = 1;
   totalHits = 0;
   loadImages(false);
 }
 
+function search(): void {
+  const query = searchInput.value.trim();
+  if (!query) return;
+  if (query !== readQueryParam()) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('q', query);
+    history.pushState(null, '', url);
+  }
+  runSearch(query);
+}
+
 searchBtn.addEventListener('click', search);
 searchInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') search();
+});
+window.addEventListener('popstate', () => {
+  searchInput.value = readQueryParam();
+  runSearch(readQueryParam() || DEFAULT_QUERY);
 });
 
 const observer = new IntersectionObserver(
