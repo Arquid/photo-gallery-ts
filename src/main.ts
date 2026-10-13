@@ -21,26 +21,33 @@ searchInput.value = initialQuery;
 let currentPage = 1;
 let totalHits = 0;
 let isLoading = false;
+let generation = 0;
+
 const PER_PAGE = 20;
 
 async function loadImages(append = false): Promise<void> {
-  if (isLoading) return;
+  if (append && isLoading) return;
+  const mine = append ? generation : ++generation;
   isLoading = true;
   loader.classList.remove('hidden');
   errorMessage.classList.add('hidden');
 
   try {
     const data = await fetchImages(currentQuery, currentPage, PER_PAGE);
+    if (mine !== generation) return;
     totalHits = data.totalHits;
     renderImages(data.hits, append);
     currentPage++;
   } catch (err) {
+    if (mine !== generation) return;
     console.error('Failed to fetch images:', err);
     errorMessage.textContent = 'Failed to load images. Please try again.';
     errorMessage.classList.remove('hidden');
   } finally {
-    isLoading = false;
-    loader.classList.add('hidden');
+    if (mine === generation) {
+      isLoading = false;
+      loader.classList.add('hidden');
+    }
   }
 }
 

@@ -183,6 +183,21 @@ window.addEventListener('popstate', () => {
 });
 ```
 
+### Overlapping Searches
+
+A new search always starts immediately, even if an earlier request is still in flight. Every search increments a `generation` counter, each request remembers its own number, and a response is only used if its number is still the latest. Late responses from older searches (including an old "next page" request) are discarded, so the gallery, the URL and the search box always agree. Only the scroll loader waits for `isLoading`.
+
+```typescript
+async function loadImages(append = false): Promise<void> {
+  if (append && isLoading) return;
+  const mine = append ? generation : ++generation;
+  // ...
+  const data = await fetchImages(currentQuery, currentPage, PER_PAGE);
+  if (mine !== generation) return; // a newer search replaced this one
+  // ...
+}
+```
+
 ### Masonry Grid
 
 The grid uses native CSS `columns` — no JavaScript layout library needed.
