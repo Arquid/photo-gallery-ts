@@ -39,6 +39,8 @@ export function renderImages(images: PixabayImage[], append = false): void {
     image.src = img.webformatURL;
     image.alt = img.tags;
     image.loading = 'lazy';
+    image.width = img.webformatWidth;
+    image.height = img.webformatHeight;
 
     const overlay = document.createElement('div');
     overlay.className = 'overlay';

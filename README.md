@@ -16,6 +16,7 @@ A responsive photo gallery built with **Vite + TypeScript**, powered by the [Pix
 - 🧱 **Masonry grid layout** — CSS `columns`-based responsive grid
 - ♾️ **Infinite scrolling** — loads more images automatically using `IntersectionObserver`
 - 🖼️ **Lightbox viewer** — click any image to view it full-size with tags and author
+- 🧱 **Stable layout** — images carry their dimensions and use native `loading="lazy"`, so the grid does not jump while images load and off-screen images are not fetched early
 - ⌨️ **Keyboard navigation** — Tab through the gallery, Enter/Space to open, arrow keys or on-screen buttons to move between images, Escape to close
 - ⚡ **Preloading** — the previous and next images load in the background as you browse the lightbox, so navigation feels instant
 - 🔝 **Back to top** — a floating button appears after scrolling and smoothly scrolls back up
@@ -181,6 +182,16 @@ window.addEventListener('popstate', () => {
   searchInput.value = readQueryParam();
   runSearch(readQueryParam() || DEFAULT_QUERY);
 });
+```
+
+### Image Sizing
+
+Each thumbnail gets the `width` and `height` that Pixabay reports (`webformatWidth` / `webformatHeight`), and the CSS uses `width: 100%; height: auto`. The browser derives the aspect ratio from the attributes and reserves the right amount of space before the image has loaded. Without this, lazy images have zero height, the whole page is "in view", and the infinite-scroll sentinel fetches page 2 straight after every search (measured: 147 px gallery height vs. 1901 px, 2 API requests vs. 1). `height: auto` is required: without it the `height` attribute would stretch the images.
+
+```typescript
+image.loading = 'lazy';
+image.width = img.webformatWidth;
+image.height = img.webformatHeight;
 ```
 
 ### Overlapping Searches

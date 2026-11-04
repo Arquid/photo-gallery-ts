@@ -58,6 +58,15 @@ describe('renderImages', () => {
     expect(metaSpan?.textContent).toBe('♥ 42');
   });
 
+  it('sets width and height so space is reserved before the image loads', async () => {
+    const { renderImages } = await import('./gallery');
+    renderImages([makeImage({ webformatWidth: 640, webformatHeight: 427 })]);
+
+    const img = document.querySelector('.gallery-item img') as HTMLImageElement;
+    expect(img.getAttribute('width')).toBe('640');
+    expect(img.getAttribute('height')).toBe('427');
+  });
+
   it('clears previous content when append is false', async () => {
     const { renderImages } = await import('./gallery');
     renderImages([makeImage()]);
