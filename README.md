@@ -19,7 +19,7 @@ A responsive photo gallery built with **Vite + TypeScript**, powered by the [Pix
 - ⌨️ **Keyboard navigation** — Tab through the gallery, Enter/Space to open, arrow keys or on-screen buttons to move between images, Escape to close
 - ⚡ **Preloading** — the previous and next images load in the background as you browse the lightbox, so navigation feels instant
 - 🔝 **Back to top** — a floating button appears after scrolling and smoothly scrolls back up
-- ⚠️ **Error feedback** — a visible message if a search or image load fails
+- ⚠️ **Error feedback** — a visible message with a "Try again" button if a search or image load fails, with specific messages for an invalid API key and for rate limiting
 - ♿ **Accessible** — ARIA roles/labels on gallery items and the lightbox dialog; while the lightbox is open the rest of the page is `inert`, so keyboard focus stays inside it and returns to the opening image when it closes
 - 🎨 **Animated UI** — fade-in animations, hover overlays, loading pulse
 
@@ -97,7 +97,7 @@ npm run dev
 
 Open your browser at **http://localhost:5173**
 
-If the page stays empty and shows "Failed to load images. Please try again.", the API key is most likely missing or invalid — check `.env` and restart the dev server.
+If the page shows "The Pixabay API rejected the request…", the API key is missing or invalid (Pixabay answers HTTP 400) — check `.env` and restart the dev server, then press "Try again".
 
 ### 6. Run the tests
 
@@ -196,6 +196,14 @@ async function loadImages(append = false): Promise<void> {
   if (mine !== generation) return; // a newer search replaced this one
   // ...
 }
+```
+
+### Error Handling
+
+Failed requests throw an `ApiError` that carries the HTTP status, and `describeError()` turns it into a message for the user: 400 (what Pixabay returns for a missing or invalid key) points to `VITE_PIXABAY_KEY`, 429 reports the rate limit, anything else (including network errors) gets a generic message. After an error the scroll observer stops loading (`hasError`) until the user starts a new search or presses "Try again", so a broken key does not cause a stream of failing requests. The retry button repeats whatever failed: if the page counter is still 1 the first page of a search failed and the gallery is replaced, otherwise the next page is appended.
+
+```typescript
+retryBtn.addEventListener('click', () => loadImages(currentPage > 1));
 ```
 
 ### Masonry Grid

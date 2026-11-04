@@ -1,4 +1,4 @@
-import { fetchImages } from './api';
+import { describeError, fetchImages } from './api';
 import { closeLightbox, renderImages } from './gallery';
 
 const searchInput = document.getElementById('search-input') as HTMLInputElement;
@@ -7,6 +7,8 @@ const loader = document.getElementById('loader') as HTMLDivElement;
 const sentinel = document.getElementById('sentinel') as HTMLDivElement;
 const errorMessage = document.getElementById('error-message') as HTMLDivElement;
 const backToTop = document.getElementById('back-to-top') as HTMLButtonElement;
+const errorText = document.getElementById('error-text') as HTMLParagraphElement;
+const retryBtn = document.getElementById('retry-btn') as HTMLButtonElement;
 
 const DEFAULT_QUERY = 'landscape';
 
@@ -22,6 +24,7 @@ let currentPage = 1;
 let totalHits = 0;
 let isLoading = false;
 let generation = 0;
+let hasError = false;
 
 const PER_PAGE = 20;
 
@@ -31,6 +34,7 @@ async function loadImages(append = false): Promise<void> {
   isLoading = true;
   loader.classList.remove('hidden');
   errorMessage.classList.add('hidden');
+  hasError = false;
 
   try {
     const data = await fetchImages(currentQuery, currentPage, PER_PAGE);
@@ -41,8 +45,9 @@ async function loadImages(append = false): Promise<void> {
   } catch (err) {
     if (mine !== generation) return;
     console.error('Failed to fetch images:', err);
-    errorMessage.textContent = 'Failed to load images. Please try again.';
+    errorText.textContent = describeError(err);
     errorMessage.classList.remove('hidden');
+    hasError = true;
   } finally {
     if (mine === generation) {
       isLoading = false;
@@ -82,7 +87,7 @@ window.addEventListener('popstate', () => {
 const observer = new IntersectionObserver(
   (entries) => {
     const entry = entries[0];
-    if (entry.isIntersecting && !isLoading) {
+    if (entry.isIntersecting && !isLoading && !hasError) {
       const loaded = (currentPage - 1) * PER_PAGE;
       if (loaded < totalHits || currentPage === 1) {
         loadImages(true);
@@ -105,5 +110,7 @@ window.addEventListener('scroll', () => {
 backToTop.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
+
+retryBtn.addEventListener('click', () => loadImages(currentPage > 1));
 
 loadImages(false);

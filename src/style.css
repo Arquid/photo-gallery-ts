@@ -197,6 +197,28 @@ body {
   display: none;
 }
 
+.error p {
+  margin-bottom: 1rem;
+}
+
+#retry-btn {
+  background: none;
+  border: 1px solid #d97676;
+  color: #d97676;
+  padding: 0.6rem 1.2rem;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#retry-btn:hover {
+  background: #d97676;
+  color: #0a0a0a;
+}
+
 @keyframes pulse {
   0%,
   80%,
