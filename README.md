@@ -271,6 +271,8 @@ function setBackgroundInert(inert: boolean): void {
 - The error message (`#error-text`) has `role="alert"`, so it is announced when it appears. The "Try again" button sits outside it and is not read as part of the alert.
 - The lightbox image gets `alt` set to the image tags every time it opens or changes.
 - Image tags appear on `:hover` and on `:focus-visible`, and are always visible on touch devices (`@media (hover: none)`).
+- All text colors meet the WCAG AA contrast ratio of 4.5:1 on their backgrounds (measured in the browser). The muted text color is `#8a847e`, and the search placeholder uses it explicitly (`opacity: 1`, because Firefox dims placeholders by default) instead of the browser default, which was only 4:1.
+- `prefers-reduced-motion: reduce` is respected: the fade-in, the hover zoom, the loading pulse and the back-to-top hover lift are turned off, and the "back to top" button scrolls instantly instead of smoothly (the media query is read when the button is clicked). Do not switch animations off with a blanket `* { animation: none }`: gallery items rest at `opacity: 0` and only become visible through their fade-in animation, so the reduced-motion block sets their final visible state explicitly.
 - `src/html.test.ts` checks these attributes in `index.html` and that every `getElementById` lookup in the code has a matching element.
 
 ### TypeScript Interfaces

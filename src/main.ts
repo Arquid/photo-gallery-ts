@@ -28,6 +28,12 @@ let hasError = false;
 
 const PER_PAGE = 20;
 
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+backToTop.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: prefersReducedMotion.matches ? 'auto' : 'smooth' });
+});
+
 async function loadImages(append = false): Promise<void> {
   if (append && isLoading) return;
   const mine = append ? generation : ++generation;
@@ -105,10 +111,6 @@ window.addEventListener('scroll', () => {
   } else {
     backToTop.classList.add('hidden');
   }
-});
-
-backToTop.addEventListener('click', () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 retryBtn.addEventListener('click', () => loadImages(currentPage > 1));
