@@ -108,6 +108,21 @@ describe('renderImages', () => {
     expect(caption.textContent).toBe('sunset,beach - by jane');
   });
 
+  it('sets the lightbox image alt text to the tags when opening and navigating', async () => {
+    const { renderImages } = await import('./gallery');
+    renderImages([
+      makeImage({ id: 1, tags: 'first,tag' }),
+      makeImage({ id: 2, tags: 'second,tag' }),
+    ]);
+
+    (document.querySelectorAll('.gallery-item')[0] as HTMLElement).click();
+    const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement;
+    expect(lightboxImg.alt).toBe('first,tag');
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    expect(lightboxImg.alt).toBe('second,tag');
+  });
+
   it('closes the lightbox when the close button is clicked', async () => {
     const { renderImages } = await import('./gallery');
     renderImages([makeImage()]);

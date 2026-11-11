@@ -74,6 +74,7 @@ function openLightBox(index: number): void {
   currentIndex = index;
   const img = currentImages[index];
   lightboxImg.src = img.largeImageURL;
+  lightboxImg.alt = img.tags;
   lightboxCaption.textContent = `${img.tags} - by ${img.user}`;
   lightbox.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -97,6 +98,7 @@ function showImageAt(index: number): void {
   currentIndex = index;
   const img = currentImages[index];
   lightboxImg.src = img.largeImageURL;
+  lightboxImg.alt = img.tags;
   lightboxCaption.textContent = `${img.tags} - by ${img.user}`;
   updateNavButtons();
   preloadNeighbors(index);

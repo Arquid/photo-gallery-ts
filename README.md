@@ -21,7 +21,7 @@ A responsive photo gallery built with **Vite + TypeScript**, powered by the [Pix
 - ⚡ **Preloading** — the previous and next images load in the background as you browse the lightbox, so navigation feels instant
 - 🔝 **Back to top** — a floating button appears after scrolling and smoothly scrolls back up
 - ⚠️ **Error feedback** — a visible message with a "Try again" button if a search or image load fails, with specific messages for an invalid API key and for rate limiting
-- ♿ **Accessible** — ARIA roles/labels on gallery items and the lightbox dialog; while the lightbox is open the rest of the page is `inert`, so keyboard focus stays inside it and returns to the opening image when it closes
+- ♿ **Accessible** — labelled search field, ARIA roles on gallery items and the lightbox dialog, announced loading and error states, image alt text, and tags that show on keyboard focus (and always on touch devices); while the lightbox is open the rest of the page is `inert`, so keyboard focus stays inside it and returns to the opening image when it closes
 - 🎨 **Animated UI** — fade-in animations, hover overlays, loading pulse
 
 ---
@@ -36,6 +36,7 @@ photo-gallery-ts/
 │   ├── gallery.ts         # DOM rendering, lightbox logic
 │   ├── api.test.ts        # Unit tests for the API layer
 │   ├── gallery.test.ts    # Unit tests for rendering and the lightbox
+│   ├── html.test.ts       # Checks accessibility attributes and element ids in index.html
 │   └── style.css          # All styles (masonry grid, lightbox, animations)
 ├── public/                # Static assets
 ├── index.html             # App shell with header, gallery container, sentinel
@@ -262,6 +263,15 @@ function setBackgroundInert(inert: boolean): void {
 ```
 
 `closeLightbox()` is exported and does nothing when the lightbox is already closed, so it can be called safely from anywhere without stealing focus. `runSearch` calls it first: if the user presses the browser's back button while the lightbox is open, the lightbox closes immediately (even if the new request is slow or fails) and the old image list can no longer be navigated.
+
+### Screen Reader and Keyboard Support
+
+- The search input has `aria-label="Search images"` (a placeholder is not an accessible name).
+- `#loader` is a `role="status"` region that contains visually hidden text ("Loading images…"); live regions announce text, and the animated dots have none. The hidden text must stay the *last* child, because the dot animation delays use `:nth-child`.
+- The error message (`#error-text`) has `role="alert"`, so it is announced when it appears. The "Try again" button sits outside it and is not read as part of the alert.
+- The lightbox image gets `alt` set to the image tags every time it opens or changes.
+- Image tags appear on `:hover` and on `:focus-visible`, and are always visible on touch devices (`@media (hover: none)`).
+- `src/html.test.ts` checks these attributes in `index.html` and that every `getElementById` lookup in the code has a matching element.
 
 ### TypeScript Interfaces
 

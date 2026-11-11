@@ -19,6 +19,7 @@
         <input
           type="text"
           id="search-input"
+          aria-label="Search images"
           placeholder="Search for images…"
           autocomplete="off"
         />
@@ -28,11 +29,12 @@
 
     <main>
       <div id="gallery" class="gallery-grid"></div>
-      <div id="loader" class="loader hidden">
+      <div id="loader" class="loader hidden" role="status">
         <span></span><span></span><span></span>
+        <p class="visually-hidden">Loading images…</p>
       </div>
       <div id="error-message" class="error hidden">
-        <p id="error-text"></p>
+        <p id="error-text" role="alert"></p>
         <button id="retry-btn" type="button">Try again</button>
       </div>
       <div id="sentinel" class="sentinel"></div>
