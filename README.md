@@ -17,7 +17,7 @@ A responsive photo gallery built with **Vite + TypeScript**, powered by the [Pix
 - ♾️ **Infinite scrolling** — loads more images automatically using `IntersectionObserver`
 - 🖼️ **Lightbox viewer** — click any image to view it full-size with tags and author
 - 🧱 **Stable layout** — images carry their dimensions and use native `loading="lazy"`, so the grid does not jump while images load and off-screen images are not fetched early
-- ⌨️ **Keyboard navigation** — Tab through the gallery, Enter/Space to open, arrow keys or on-screen buttons to move between images, Escape to close
+- ⌨️ **Keyboard navigation** — Tab through the gallery, Enter/Space to open, arrow keys, on-screen buttons or a swipe on touch screens to move between images, Escape to close
 - ⚡ **Preloading** — the previous and next images load in the background as you browse the lightbox, so navigation feels instant
 - 🔝 **Back to top** — a floating button appears after scrolling and smoothly scrolls back up
 - ⚠️ **Error feedback** — a visible message with a "Try again" button if a search or image load fails, with specific messages for an invalid API key and for rate limiting
@@ -234,7 +234,7 @@ The grid uses native CSS `columns` — no JavaScript layout library needed.
 
 ### Lightbox Navigation & Preloading
 
-The lightbox tracks every image loaded so far (`currentImages`) and the index of the open one. Arrow keys and the on-screen prev/next buttons move through the same list, and the buttons are disabled at the first/last image (touch swiping is not implemented). Each time the lightbox opens or moves to a new image, the neighboring images are preloaded in the background:
+The lightbox tracks every image loaded so far (`currentImages`) and the index of the open one. Arrow keys, the on-screen prev/next buttons and touch swipes move through the same list, and the buttons are disabled at the first/last image. Each time the lightbox opens or moves to a new image, the neighboring images are preloaded in the background:
 
 ```typescript
 function preloadImage(index: number): void {
@@ -249,6 +249,12 @@ function preloadNeighbors(index: number): void {
   preloadImage(index + 1);
 }
 ```
+
+### Lightbox on Small Screens
+
+- **Buttons never cover the photo.** The image is limited to `min(90vw, 100vw - 9rem)`, which leaves room for the prev/next buttons on both sides. Below 600 px width the buttons move to the bottom corners and the image height is capped at 65vh so they stay clear of the caption. Button borders use `--muted` (5.7:1) instead of the old `#333` (1.6:1).
+- **Swipe.** A horizontal touch swipe of at least 50 px (and more horizontal than vertical) shows the next image (swipe left) or the previous one (swipe right). Only `pointerType === 'touch'` is handled, so dragging with a mouse never changes the image, and `touch-action: pan-y` on the lightbox stops the browser from cancelling horizontal gestures.
+- **Short caption.** The caption shows at most five tags; the full tag list is still used as the image's `alt` text.
 
 ### Lightbox Focus Handling
 

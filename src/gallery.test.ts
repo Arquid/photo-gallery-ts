@@ -105,7 +105,80 @@ describe('renderImages', () => {
 
     expect(lightbox.classList.contains('hidden')).toBe(false);
     expect(lightboxImg.getAttribute('src')).toBe('https://example.com/large.jpg');
-    expect(caption.textContent).toBe('sunset,beach - by jane');
+    expect(caption.textContent).toBe('sunset, beach - by jane');
+  });
+
+  it('shows at most five trimmed tags in the lightbox caption but keeps all tags as alt text', async () => {
+    const { renderImages } = await import('./gallery');
+    const tags = 'a, b, c, d, e, f, g';
+    renderImages([makeImage({ tags, user: 'jane' })]);
+
+    (document.querySelector('.gallery-item') as HTMLElement).click();
+
+    expect(document.getElementById('lightbox-caption')!.textContent).toBe('a, b, c, d, e - by jane');
+    expect((document.getElementById('lightbox-img') as HTMLImageElement).alt).toBe(tags);
+  });
+
+  describe('touch swipe in the lightbox', () => {
+    function pointer(type: string, x: number, y: number, pointerType = 'touch'): void {
+      document.getElementById('lightbox')!.dispatchEvent(
+        new PointerEvent(type, { pointerType, isPrimary: true, clientX: x, clientY: y, bubbles: true })
+      );
+    }
+
+    async function openMiddleImage(): Promise<HTMLElement> {
+      const { renderImages } = await import('./gallery');
+      renderImages([
+        makeImage({ id: 1, largeImageURL: 'https://example.com/1.jpg' }),
+        makeImage({ id: 2, largeImageURL: 'https://example.com/2.jpg' }),
+        makeImage({ id: 3, largeImageURL: 'https://example.com/3.jpg' }),
+      ]);
+      (document.querySelectorAll('.gallery-item')[1] as HTMLElement).click();
+      return document.getElementById('lightbox-img')!;
+    }
+
+    it('shows the next image when swiping left', async () => {
+      const img = await openMiddleImage();
+      pointer('pointerdown', 300, 200);
+      pointer('pointerup', 200, 205);
+      expect(img.getAttribute('src')).toBe('https://example.com/3.jpg');
+    });
+
+    it('shows the previous image when swiping right', async () => {
+      const img = await openMiddleImage();
+      pointer('pointerdown', 100, 200);
+      pointer('pointerup', 220, 190);
+      expect(img.getAttribute('src')).toBe('https://example.com/1.jpg');
+    });
+
+    it('ignores short movements', async () => {
+      const img = await openMiddleImage();
+      pointer('pointerdown', 100, 200);
+      pointer('pointerup', 140, 200);
+      expect(img.getAttribute('src')).toBe('https://example.com/2.jpg');
+    });
+
+    it('ignores mostly vertical movements', async () => {
+      const img = await openMiddleImage();
+      pointer('pointerdown', 100, 100);
+      pointer('pointerup', 170, 300);
+      expect(img.getAttribute('src')).toBe('https://example.com/2.jpg');
+    });
+
+    it('ignores mouse drags', async () => {
+      const img = await openMiddleImage();
+      pointer('pointerdown', 300, 200, 'mouse');
+      pointer('pointerup', 100, 200, 'mouse');
+      expect(img.getAttribute('src')).toBe('https://example.com/2.jpg');
+    });
+
+    it('forgets a swipe that was cancelled by the browser', async () => {
+      const img = await openMiddleImage();
+      pointer('pointerdown', 300, 200);
+      pointer('pointercancel', 300, 200);
+      pointer('pointerup', 100, 200);
+      expect(img.getAttribute('src')).toBe('https://example.com/2.jpg');
+    });
   });
 
   it('sets the lightbox image alt text to the tags when opening and navigating', async () => {
