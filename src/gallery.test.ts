@@ -181,6 +181,30 @@ describe('renderImages', () => {
     });
   });
 
+  it('opens the lightbox with Enter or Space on a focused gallery item but ignores other keys', async () => {
+    const { renderImages, closeLightbox } = await import('./gallery');
+    renderImages([makeImage()]);
+    const item = document.querySelector('.gallery-item') as HTMLElement;
+    const lightbox = document.getElementById('lightbox')!;
+    const press = (key: string) => {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      item.dispatchEvent(event);
+      return event;
+    };
+
+    press('a');
+    expect(lightbox.classList.contains('hidden')).toBe(true);
+
+    const enter = press('Enter');
+    expect(lightbox.classList.contains('hidden')).toBe(false);
+    expect(enter.defaultPrevented).toBe(true);
+
+    closeLightbox();
+    const space = press(' ');
+    expect(lightbox.classList.contains('hidden')).toBe(false);
+    expect(space.defaultPrevented).toBe(true);
+  });
+
   it('sets the lightbox image alt text to the tags when opening and navigating', async () => {
     const { renderImages } = await import('./gallery');
     renderImages([

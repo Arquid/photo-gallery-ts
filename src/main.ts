@@ -1,118 +1,17 @@
+import { createApp } from './app';
 import { describeError, fetchImages } from './api';
 import { closeLightbox, renderImages } from './gallery';
 
-const searchInput = document.getElementById('search-input') as HTMLInputElement;
-const searchBtn = document.getElementById('search-btn') as HTMLButtonElement;
-const loader = document.getElementById('loader') as HTMLDivElement;
-const sentinel = document.getElementById('sentinel') as HTMLDivElement;
-const errorMessage = document.getElementById('error-message') as HTMLDivElement;
-const backToTop = document.getElementById('back-to-top') as HTMLButtonElement;
-const errorText = document.getElementById('error-text') as HTMLParagraphElement;
-const retryBtn = document.getElementById('retry-btn') as HTMLButtonElement;
-
-const DEFAULT_QUERY = 'landscape';
-
-function readQueryParam(): string {
-  return new URLSearchParams(window.location.search).get('q')?.trim() ?? '';
-}
-
-const initialQuery = readQueryParam();
-let currentQuery = initialQuery || DEFAULT_QUERY;
-searchInput.value = initialQuery;
-
-let currentPage = 1;
-let totalHits = 0;
-let isLoading = false;
-let generation = 0;
-let hasError = false;
-
-const PER_PAGE = 20;
-
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-backToTop.addEventListener('click', () => {
-  window.scrollTo({ top: 0, behavior: prefersReducedMotion.matches ? 'auto' : 'smooth' });
-});
-
-async function loadImages(append = false): Promise<void> {
-  if (append && isLoading) return;
-  const mine = append ? generation : ++generation;
-  isLoading = true;
-  loader.classList.remove('hidden');
-  errorMessage.classList.add('hidden');
-  hasError = false;
-
-  try {
-    const data = await fetchImages(currentQuery, currentPage, PER_PAGE);
-    if (mine !== generation) return;
-    totalHits = data.totalHits;
-    renderImages(data.hits, append);
-    currentPage++;
-  } catch (err) {
-    if (mine !== generation) return;
-    console.error('Failed to fetch images:', err);
-    errorText.textContent = describeError(err);
-    errorMessage.classList.remove('hidden');
-    hasError = true;
-  } finally {
-    if (mine === generation) {
-      isLoading = false;
-      loader.classList.add('hidden');
-    }
-  }
-}
-
-function runSearch(query: string): void {
-  closeLightbox();
-  currentQuery = query;
-  currentPage = 1;
-  totalHits = 0;
-  loadImages(false);
-}
-
-function search(): void {
-  const query = searchInput.value.trim();
-  if (!query) return;
-  if (query !== readQueryParam()) {
-    const url = new URL(window.location.href);
-    url.searchParams.set('q', query);
-    history.pushState(null, '', url);
-  }
-  runSearch(query);
-}
-
-searchBtn.addEventListener('click', search);
-searchInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') search();
-});
-window.addEventListener('popstate', () => {
-  searchInput.value = readQueryParam();
-  runSearch(readQueryParam() || DEFAULT_QUERY);
-});
-
-const observer = new IntersectionObserver(
-  (entries) => {
-    const entry = entries[0];
-    if (entry.isIntersecting && !isLoading && !hasError) {
-      const loaded = (currentPage - 1) * PER_PAGE;
-      if (loaded < totalHits || currentPage === 1) {
-        loadImages(true);
-      }
-    }
+createApp(
+  {
+    searchInput: document.getElementById('search-input') as HTMLInputElement,
+    searchBtn: document.getElementById('search-btn') as HTMLButtonElement,
+    loader: document.getElementById('loader') as HTMLDivElement,
+    sentinel: document.getElementById('sentinel') as HTMLDivElement,
+    errorMessage: document.getElementById('error-message') as HTMLDivElement,
+    errorText: document.getElementById('error-text') as HTMLParagraphElement,
+    retryBtn: document.getElementById('retry-btn') as HTMLButtonElement,
+    backToTop: document.getElementById('back-to-top') as HTMLButtonElement,
   },
-  { rootMargin: '300px'}
+  { fetchImages, renderImages, closeLightbox, describeError }
 );
-
-observer.observe(sentinel);
-
-window.addEventListener('scroll', () => {
-  if (window.scrollY > 600) {
-    backToTop.classList.remove('hidden');
-  } else {
-    backToTop.classList.add('hidden');
-  }
-});
-
-retryBtn.addEventListener('click', () => loadImages(currentPage > 1));
-
-loadImages(false);

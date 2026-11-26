@@ -6,6 +6,7 @@ A responsive photo gallery built with **Vite + TypeScript**, powered by the [Pix
 ![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-Masonry%20Grid-1572B6?style=flat-square&logo=css3&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+![CI](https://github.com/Arquid/photo-gallery-ts/actions/workflows/ci.yml/badge.svg)
 
 ---
 
@@ -31,9 +32,11 @@ A responsive photo gallery built with **Vite + TypeScript**, powered by the [Pix
 ```
 photo-gallery-ts/
 ├── src/
-│   ├── main.ts            # App entry point, search + URL state, infinite scroll
+│   ├── main.ts            # Entry point: wires the real DOM and modules into createApp
+│   ├── app.ts             # Search, URL state, infinite scroll, error handling (testable, dependencies injected)
 │   ├── api.ts             # Pixabay API calls and TypeScript interfaces
 │   ├── gallery.ts         # DOM rendering, lightbox logic
+│   ├── app.test.ts        # Unit tests for the app logic
 │   ├── api.test.ts        # Unit tests for the API layer
 │   ├── gallery.test.ts    # Unit tests for rendering and the lightbox
 │   ├── html.test.ts       # Checks accessibility attributes and element ids in index.html
@@ -50,7 +53,7 @@ photo-gallery-ts/
 
 ## 🚀 Getting Started
 
-**Prerequisites:** [Node.js](https://nodejs.org/) 20.19+ or 22.12+ (required by Vite 8) and npm.
+**Prerequisites:** [Node.js](https://nodejs.org/) 20.19+, 22.13+ or 24+ (Vite 8 needs 20.19 / 22.12, jsdom for the tests needs 20.19 / 22.13) and npm. The same range is declared in the `engines` field of `package.json`.
 
 ### 1. Clone the repository
 
@@ -115,6 +118,20 @@ npm test
 | `npm run build` | Type-check with `tsc`, then create a production build in `dist/` |
 | `npm run preview` | Serve the production build locally |
 | `npm test` | Run the unit tests once with Vitest |
+| `npm run coverage` | Run the tests and print a coverage report (an HTML report is written to `coverage/`) |
+
+---
+
+## 🔄 Continuous Integration
+
+`.github/workflows/ci.yml` runs on every push to `main` and on every pull request, on Node 22 and Node 24:
+
+1. `npm ci` installs exactly what `package-lock.json` pins
+2. `npx tsc --noEmit` type-checks the project
+3. `npm run coverage` runs the tests and prints a coverage report
+4. `npm run build` creates the production build
+
+The workflow has read-only access to the repository and needs no secrets: the tests do not call the API, and the build works without an API key. You can run the same four steps locally.
 
 ---
 
@@ -184,6 +201,12 @@ window.addEventListener('popstate', () => {
   runSearch(readQueryParam() || DEFAULT_QUERY);
 });
 ```
+
+### Testable App Logic
+
+The search, URL, infinite-scroll, error and back-to-top logic lives in `src/app.ts` as `createApp(elements, deps)`. The DOM elements and the dependencies (`fetchImages`, `renderImages`, `closeLightbox`, `describeError`) are passed in, so tests can drive the app with fake dependencies, controllable promises and a fake `IntersectionObserver`, without a network or the real gallery module. `main.ts` only collects the elements and passes the real modules in. `createApp` returns `destroy()`, which removes the `window` listeners and disconnects the observer (tests call it between runs).
+
+The tests were checked by mutation: breaking the stale-response guards, the error flag, the retry direction, the history handling, the page counter and the reduced-motion branch each makes at least one test fail. Current coverage is about 99 % of statements and 100 % of lines (`npm run coverage`; `main.ts` is excluded because it only wires things together).
 
 ### Image Sizing
 
@@ -309,6 +332,7 @@ This project uses **zero runtime dependencies** — only Vite as a dev tool.
 | `typescript` | Type checking |
 | `vitest` | Test runner |
 | `jsdom` | DOM environment for tests |
+| `@vitest/coverage-v8` | Coverage reports |
 
 ---
 
