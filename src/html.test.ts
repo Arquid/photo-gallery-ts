@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import html from '../index.html?raw';
+import favicon from '../public/favicon.svg?raw';
 import gallerySource from './gallery.ts?raw';
 import mainSource from './main.ts?raw';
 
@@ -26,6 +27,18 @@ describe('index.html', () => {
     expect(children.slice(0, 3).every((child) => child.tagName === 'SPAN')).toBe(true);
     expect(last.classList.contains('visually-hidden')).toBe(true);
     expect(last.textContent).toContain('Loading');
+  });
+
+  it('has a polite status region for result messages that starts hidden', () => {
+    const status = doc.getElementById('status-message');
+    expect(status?.getAttribute('role')).toBe('status');
+    expect(status?.classList.contains('hidden')).toBe(true);
+  });
+
+  it('declares a page description and a favicon that exists', () => {
+    expect(doc.querySelector('meta[name="description"]')?.getAttribute('content')).toBeTruthy();
+    expect(doc.querySelector('link[rel~="icon"]')?.getAttribute('href')).toBe('/favicon.svg');
+    expect(favicon).toContain('<svg');
   });
 
   it('marks the lightbox as a named modal dialog with labelled buttons', () => {

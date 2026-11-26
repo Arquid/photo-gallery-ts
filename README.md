@@ -22,6 +22,7 @@ A responsive photo gallery built with **Vite + TypeScript**, powered by the [Pix
 - ⚡ **Preloading** — the previous and next images load in the background as you browse the lightbox, so navigation feels instant
 - 🔝 **Back to top** — a floating button appears after scrolling and smoothly scrolls back up
 - ⚠️ **Error feedback** — a visible message with a "Try again" button if a search or image load fails, with specific messages for an invalid API key and for rate limiting
+- 📭 **Clear result messages** — "No results for …" when a search finds nothing, and a note when the last result has been loaded (Pixabay exposes at most 500 results per search)
 - ♿ **Accessible** — labelled search field, ARIA roles on gallery items and the lightbox dialog, announced loading and error states, image alt text, and tags that show on keyboard focus (and always on touch devices); while the lightbox is open the rest of the page is `inert`, so keyboard focus stays inside it and returns to the opening image when it closes
 - 🎨 **Animated UI** — fade-in animations, hover overlays, loading pulse
 
@@ -41,7 +42,8 @@ photo-gallery-ts/
 │   ├── gallery.test.ts    # Unit tests for rendering and the lightbox
 │   ├── html.test.ts       # Checks accessibility attributes and element ids in index.html
 │   └── style.css          # All styles (masonry grid, lightbox, animations)
-├── public/                # Static assets
+├── public/                # Static assets (favicon.svg)
+├── LICENSE                # MIT license
 ├── index.html             # App shell with header, gallery container, sentinel
 ├── vitest.config.ts       # Test runner configuration (jsdom)
 ├── tsconfig.json          # TypeScript configuration
@@ -208,6 +210,10 @@ The search, URL, infinite-scroll, error and back-to-top logic lives in `src/app.
 
 The tests were checked by mutation: breaking the stale-response guards, the error flag, the retry direction, the history handling, the page counter and the reduced-motion branch each makes at least one test fail. Current coverage is about 99 % of statements and 100 % of lines (`npm run coverage`; `main.ts` is excluded because it only wires things together).
 
+### Empty and End States
+
+After every successful page load `createApp` calls `updateStatus()`: if the API reports `totalHits === 0` it shows `No results for “<query>”.`, and once `loaded >= totalHits` (pages loaded × 20) it shows `You have reached the end of the results.` The message is hidden whenever a new search starts. The boundary matters: exactly 20 results end on page 1, 21 results do not (covered by a test).
+
 ### Image Sizing
 
 Each thumbnail gets the `width` and `height` that Pixabay reports (`webformatWidth` / `webformatHeight`), and the CSS uses `width: 100%; height: auto`. The browser derives the aspect ratio from the attributes and reserves the right amount of space before the image has loaded. Without this, lazy images have zero height, the whole page is "in view", and the infinite-scroll sentinel fetches page 2 straight after every search (measured: 147 px gallery height vs. 1901 px, 2 API requests vs. 1). `height: auto` is required: without it the `height` attribute would stretch the images.
@@ -297,6 +303,7 @@ function setBackgroundInert(inert: boolean): void {
 
 - The search input has `aria-label="Search images"` (a placeholder is not an accessible name).
 - `#loader` is a `role="status"` region that contains visually hidden text ("Loading images…"); live regions announce text, and the animated dots have none. The hidden text must stay the *last* child, because the dot animation delays use `:nth-child`.
+- `#status-message` (no results / end of results) is a `role="status"` region, so changes are announced politely; its text is set with `textContent`, so a search term such as `<b>x</b>` is shown literally.
 - The error message (`#error-text`) has `role="alert"`, so it is announced when it appears. The "Try again" button sits outside it and is not read as part of the alert.
 - The lightbox image gets `alt` set to the image tags every time it opens or changes.
 - Image tags appear on `:hover` and on `:focus-visible`, and are always visible on touch devices (`@media (hover: none)`).
@@ -338,4 +345,4 @@ This project uses **zero runtime dependencies** — only Vite as a dev tool.
 
 ## 📄 License
 
-MIT © 2025 — free to use, modify, and distribute.
+MIT © 2026 Arquid — free to use, modify, and distribute. See [LICENSE](LICENSE).

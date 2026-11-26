@@ -7,6 +7,7 @@ export interface AppElements {
   sentinel: HTMLElement;
   errorMessage: HTMLElement;
   errorText: HTMLElement;
+  statusMessage: HTMLElement;
   retryBtn: HTMLButtonElement;
   backToTop: HTMLButtonElement;
 }
@@ -39,12 +40,24 @@ export function createApp(el: AppElements, deps: AppDeps): { destroy: () => void
   const listeners = new AbortController();
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+  function updateStatus(): void {
+    let message = '';
+    if (totalHits === 0) {
+      message = `No results for “${currentQuery}”.`;
+    } else if ((currentPage - 1) * PER_PAGE >= totalHits) {
+      message = 'You have reached the end of the results.';
+    }
+    el.statusMessage.textContent = message;
+    el.statusMessage.classList.toggle('hidden', message === '');
+  }
+
   async function loadImages(append = false): Promise<void> {
     if (append && isLoading) return;
     const mine = append ? generation : ++generation;
     isLoading = true;
     el.loader.classList.remove('hidden');
     el.errorMessage.classList.add('hidden');
+    if (!append) el.statusMessage.classList.add('hidden');
     hasError = false;
 
     try {
@@ -53,6 +66,7 @@ export function createApp(el: AppElements, deps: AppDeps): { destroy: () => void
       totalHits = data.totalHits;
       deps.renderImages(data.hits, append);
       currentPage++;
+      updateStatus();
     } catch (err) {
       if (mine !== generation) return;
       console.error('Failed to fetch images:', err);

@@ -78,6 +78,7 @@ describe('createApp', () => {
         sentinel: $('sentinel'),
         errorMessage: $('error-message'),
         errorText: $('error-text'),
+        statusMessage: $('status-message'),
         retryBtn: $('retry-btn') as HTMLButtonElement,
         backToTop: $('back-to-top') as HTMLButtonElement,
       },
@@ -337,6 +338,72 @@ describe('createApp', () => {
       intersect();
 
       expect(fetchImages).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('result messages', () => {
+    it('says so, naming the query, when a search has no results', async () => {
+      history.replaceState(null, '', '/?q=zzzz');
+      fetchImages.mockResolvedValueOnce({ totalHits: 0, hits: [] });
+      boot();
+      await flush();
+
+      expect(isHidden('status-message')).toBe(false);
+      expect($('status-message').textContent).toBe('No results for “zzzz”.');
+    });
+
+    it('shows the query as plain text, never as HTML', async () => {
+      history.replaceState(null, '', '/?q=' + encodeURIComponent('<b>bold</b>'));
+      fetchImages.mockResolvedValueOnce({ totalHits: 0, hits: [] });
+      boot();
+      await flush();
+
+      expect($('status-message').textContent).toContain('<b>bold</b>');
+      expect($('status-message').querySelector('b')).toBeNull();
+    });
+
+    it('stays hidden while more results are available', async () => {
+      await bootLoaded(100);
+
+      expect(isHidden('status-message')).toBe(true);
+    });
+
+    it('announces the end of the results after the last page has loaded', async () => {
+      await bootLoaded(30);
+      expect(isHidden('status-message')).toBe(true);
+      fetchImages.mockResolvedValueOnce(makeResponse('page2', 30));
+
+      intersect();
+      await flush();
+
+      expect(isHidden('status-message')).toBe(false);
+      expect($('status-message').textContent).toBe('You have reached the end of the results.');
+    });
+
+    it('announces the end right away when the first page holds every result', async () => {
+      await bootLoaded(5);
+
+      expect($('status-message').textContent).toBe('You have reached the end of the results.');
+    });
+
+    it('treats exactly one full page of results as the end, but one more as not the end', async () => {
+      await bootLoaded(PER_PAGE);
+      expect(isHidden('status-message')).toBe(false);
+
+      app?.destroy();
+      document.body.innerHTML = new DOMParser().parseFromString(html, 'text/html').body.innerHTML;
+      await bootLoaded(PER_PAGE + 1);
+      expect(isHidden('status-message')).toBe(true);
+    });
+
+    it('hides the message again when a new search starts', async () => {
+      await bootLoaded(5);
+      expect(isHidden('status-message')).toBe(false);
+      fetchImages.mockReturnValueOnce(deferred<PixabayResponse>().promise);
+
+      search('cat');
+
+      expect(isHidden('status-message')).toBe(true);
     });
   });
 

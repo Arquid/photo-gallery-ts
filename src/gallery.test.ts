@@ -58,6 +58,13 @@ describe('renderImages', () => {
     expect(metaSpan?.textContent).toBe('♥ 42');
   });
 
+  it('trims whitespace around tags in the overlay (Pixabay sends "a, b, c")', async () => {
+    const { renderImages } = await import('./gallery');
+    renderImages([makeImage({ tags: 'forest, trees,  green, extra' })]);
+
+    expect(document.querySelector('.overlay-tags')?.textContent).toBe('forest · trees · green');
+  });
+
   it('sets width and height so space is reserved before the image loads', async () => {
     const { renderImages } = await import('./gallery');
     renderImages([makeImage({ webformatWidth: 640, webformatHeight: 427 })]);

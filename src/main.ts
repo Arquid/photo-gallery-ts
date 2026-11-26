@@ -10,6 +10,7 @@ createApp(
     sentinel: document.getElementById('sentinel') as HTMLDivElement,
     errorMessage: document.getElementById('error-message') as HTMLDivElement,
     errorText: document.getElementById('error-text') as HTMLParagraphElement,
+    statusMessage: document.getElementById('status-message') as HTMLParagraphElement,
     retryBtn: document.getElementById('retry-btn') as HTMLButtonElement,
     backToTop: document.getElementById('back-to-top') as HTMLButtonElement,
   },

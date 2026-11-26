@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Photo Gallery</title>
+    <meta
+      name="description"
+      content="Search and browse free Pixabay photos in a fast, keyboard-friendly gallery."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/src/style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
@@ -37,6 +42,7 @@
         <p id="error-text" role="alert"></p>
         <button id="retry-btn" type="button">Try again</button>
       </div>
+      <p id="status-message" class="status hidden" role="status"></p>
       <div id="sentinel" class="sentinel"></div>
       <button id="back-to-top" class="back-to-top hidden" aria-label="Back to top">↑</button>
     </main>

@@ -18,6 +18,10 @@ function setBackgroundInert(inert: boolean): void {
   background.forEach((el) => el.toggleAttribute('inert', inert));
 }
 
+function formatTags(tags: string, count: number, separator: string): string {
+  return tags.split(',').slice(0, count).map((tag) => tag.trim()).join(separator);
+}
+
 export function renderImages(images: PixabayImage[], append = false): void {
   if (!append) {
     gallery.innerHTML = '';
@@ -47,7 +51,7 @@ export function renderImages(images: PixabayImage[], append = false): void {
 
     const tagsSpan = document.createElement('span');
     tagsSpan.className = 'overlay-tags';
-    tagsSpan.textContent = img.tags.split(',').slice(0, 3).join(' · ');
+    tagsSpan.textContent = formatTags(img.tags, 3, ' · ');
 
     const metaSpan = document.createElement('span');
     metaSpan.className = 'overlay-meta';
@@ -91,10 +95,9 @@ export function closeLightbox(): void {
 }
 
 function setLightboxContent(img: PixabayImage): void {
-  const tags = img.tags.split(',').slice(0, 5).map((tag) => tag.trim()).join(', ');
   lightboxImg.src = img.largeImageURL;
   lightboxImg.alt = img.tags;
-  lightboxCaption.textContent = `${tags} - by ${img.user}`;
+  lightboxCaption.textContent = `${formatTags(img.tags, 5, ', ')} - by ${img.user}`;
 }
 
 function showImageAt(index: number): void {
